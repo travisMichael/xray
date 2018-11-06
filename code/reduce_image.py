@@ -10,23 +10,24 @@ import torchvision as tv
 import time
 from PIL import Image
 
-image = io.imread("D:\\x-ray\\images_004\\00006585_007.PNG")
+# image = io.imread("D:\\x-ray\\images_004\\00006585_007.PNG")
 
 i = 0
 start_time = time.time()
 
-model = tv.models.densenet121(True)
+# pc
+# path_in = "D:\\x-ray\\images_001"
+# path_out = "D:\\output\\images_001"
 
-path_in = "D:\\x-ray\\images_001"
-path_out = "D:\\output\\images_001"
+# mac
+path_in = "/Users/a1406632/Downloads/Images_001"
+path_out = "/Users/a1406632/data_train/images_train"
+
 for iname in os.listdir(path_in):
-    foo = Image.open(path_in + "\\" + iname)
-    #foo.size(1024, 1024)
+    foo = Image.open(path_in + "/" + iname)
     foo = foo.resize((224, 224), Image.ANTIALIAS)
-    # foo.save(path_out + "\\" + iname, quality=95)
     foo.save(path_out + "\\" + iname, optimize=True, quality=95)
     i = i + 1
-    # image = io.imread("D:\\x-ray\\images_004\\" + iname)
     print(str(i))
 
 end_time = time.time()

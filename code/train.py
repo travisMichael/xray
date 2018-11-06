@@ -41,7 +41,6 @@ test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=BATCH_SIZE, s
 
 
 model = mm.densenet121()
-# model = tv.models.densenet121(True)
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters())
 

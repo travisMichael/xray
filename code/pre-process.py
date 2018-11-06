@@ -12,29 +12,30 @@ import time
 import pickle
 from PIL import Image
 
-dataframe = pd.read_csv("D:\\Data_Entry_2017.csv")
+# dataframe = pd.read_csv("D:\\Data_Entry_2017.csv")
+dataframe = pd.read_csv("../Data_Entry_2017.csv")
 
 
 # labels = dataframe["Image Index"]
 dataframe["label"] = dataframe["Finding Labels"].apply(lambda x: "Pneumonia" in x)
-# print("hello") # Pneumonia
-
 
 
 
 start_time = time.time()
 i = 1
 total = 1
-# input = torch.tensor(np.array(batch), dtype=torch.float)
-path_in = "D:\\x-ray\\images_001"
-path_out = "D:\\output\\images_001"
+
+data_set_name = "images_001"
+path_in = "../" + data_set_name
+path_out = "../data_train/"
 
 data = []
 labels = []
 last = None
-for iname in os.listdir(path_out):
+for iname in os.listdir(path_in):
 
-    current = io.imread(path_out + "\\" + iname)
+    # current = io.imread(path_in + "\\" + iname)
+    current = io.imread(path_in + "/" + iname)
     if len(current.shape) >= 3:
         print("removing extra data!!")
         current = current[:,:,0]
@@ -55,20 +56,14 @@ for iname in os.listdir(path_out):
     data.append(channel)
 
     if i % 16 == 0:
-        # d = np.array(data)
-        # l = np.array(labels)
-        np.save("data\\train_" + str(total), np.array(data))
-        np.save("data\\labels_" + str(total), np.array(labels))
+        np.save(path_out + "data_" + data_set_name + "_" + str(total), np.array(data))
+        np.save(path_out + "labels_" + data_set_name + "_" + str(total), np.array(labels))
         data = []
         labels = []
         total += 1
     i = i + 1
     print(str(i))
 
-input = np.array(data)
-# np.save("aaa", data)
-# with open('train.pkl', 'wb') as f:
-#     pickle.dump(input, f)
 end_time = time.time()
 print("--- %s seconds ---" % (end_time - start_time))
 
