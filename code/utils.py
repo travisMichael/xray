@@ -45,25 +45,9 @@ def train(model, device, data_loader, criterion, optimizer, epoch, print_freq=10
 
 	end = time.time()
 	index = 1
-	for i in range(312):
-		# measure data loading time
-		# image = io.imread("D:\\output\\images_001\\00000001_000.PNG")
-		# channel = []
-		# channel.append(image)
-		# channel.append(image)
-		# channel.append(image)
-        #
-		# batch = []
-        #
-		# for i in range(8):
-		# 	batch.append(channel)
-		# input = torch.tensor(np.array(batch), dtype=torch.float)
-		# data_time.update(time.time() - end)
-		data = np.load("data\\train_" + str(index) + ".npy")
-		labels = np.load("data\\labels_" + str(index) + ".npy")
+	for i in range(data_loader.size):
 
-		input = torch.tensor(data, dtype=torch.float)
-		target = torch.tensor(labels, dtype=torch.long)
+		input, target = data_loader.get_next_batch()
 		if isinstance(input, tuple):
 			input = tuple([e.to(device) if type(e) == torch.Tensor else e for e in input])
 		else:
@@ -92,7 +76,7 @@ def train(model, device, data_loader, criterion, optimizer, epoch, print_freq=10
 				  'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
 				  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
 				  'Accuracy {acc.val:.3f} ({acc.avg:.3f})'.format(
-				epoch, i, len(data_loader), batch_time=batch_time,
+				epoch, i, data_loader.size, batch_time=batch_time,
 				data_time=data_time, loss=losses, acc=accuracy))
 
 	return losses.avg, accuracy.avg
@@ -109,7 +93,9 @@ def evaluate(model, device, data_loader, criterion, print_freq=10):
 
 	with torch.no_grad():
 		end = time.time()
-		for i, (input, target) in enumerate(data_loader):
+		for i in range(data_loader.size):
+
+			input, target = data_loader.get_next_batch()
 
 			if isinstance(input, tuple):
 				input = tuple([e.to(device) if type(e) == torch.Tensor else e for e in input])
@@ -137,7 +123,7 @@ def evaluate(model, device, data_loader, criterion, print_freq=10):
 					  'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
 					  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
 					  'Accuracy {acc.val:.3f} ({acc.avg:.3f})'.format(
-					i, len(data_loader), batch_time=batch_time, loss=losses, acc=accuracy))
+					i, data_loader.size, batch_time=batch_time, loss=losses, acc=accuracy))
 
 	return losses.avg, accuracy.avg, results
 

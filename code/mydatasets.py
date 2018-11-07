@@ -3,7 +3,7 @@ from torch.utils.data import TensorDataset, Dataset
 import pandas as pd
 import numpy as np
 
-def load_seizure_dataset(path, model_type):
+def load_seizure_dataset(path):
 	df = pd.read_csv(path)
 #	d = np.load("aaa.npy")
 	# data = torch.zeros((2, 2))
