@@ -3,6 +3,7 @@ import time
 import numpy as np
 import torch
 from skimage import io, transform
+import sklearn
 
 
 class AverageMeter(object):
@@ -45,9 +46,16 @@ def train(model, device, data_loader, criterion, optimizer, epoch, print_freq=10
 
 	end = time.time()
 	index = 1
-	for i in range(data_loader.size):
+	i = 0
+	while True:
 
 		input, target = data_loader.get_next_batch()
+		if input is None:
+			break
+
+		input = torch.tensor(input, dtype=torch.float)
+		target = torch.tensor(target, dtype=torch.long)
+
 		if isinstance(input, tuple):
 			input = tuple([e.to(device) if type(e) == torch.Tensor else e for e in input])
 		else:
@@ -76,8 +84,9 @@ def train(model, device, data_loader, criterion, optimizer, epoch, print_freq=10
 				  'Data {data_time.val:.3f} ({data_time.avg:.3f})\t'
 				  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
 				  'Accuracy {acc.val:.3f} ({acc.avg:.3f})'.format(
-				epoch, i, data_loader.size, batch_time=batch_time,
+				epoch, i, 100, batch_time=batch_time, 					# data_loader.size
 				data_time=data_time, loss=losses, acc=accuracy))
+		i += 1
 
 	return losses.avg, accuracy.avg
 
@@ -93,9 +102,11 @@ def evaluate(model, device, data_loader, criterion, print_freq=10):
 
 	with torch.no_grad():
 		end = time.time()
-		for i in range(data_loader.size):
+		while True:
 
 			input, target = data_loader.get_next_batch()
+			if input is None:
+				break
 
 			if isinstance(input, tuple):
 				input = tuple([e.to(device) if type(e) == torch.Tensor else e for e in input])
@@ -117,6 +128,9 @@ def evaluate(model, device, data_loader, criterion, print_freq=10):
 			y_true = target.detach().to('cpu').numpy().tolist()
 			y_pred = output.detach().to('cpu').max(1)[1].numpy().tolist()
 			results.extend(list(zip(y_true, y_pred)))
+			y1, y2 = zip(*results)
+			f1 = sklearn.metrics.f1_score(y1, y2)
+			roc = sklearn.metrics.roc_auc_score(y2, y1)
 
 			if i % print_freq == 0:
 				print('Test: [{0}/{1}]\t'

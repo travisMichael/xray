@@ -1,17 +1,12 @@
 import os
-import sys
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
 import torch.optim as optim
 
-from mydatasets import load_seizure_dataset
 from utils import train, evaluate
-from plots import plot_learning_curves, plot_confusion_matrix
-import densenet as dnet
-import cnn
-import my_loader
-import torchvision as tv
+from plots import plot_learning_curves
+from model import cnn
+from loader import custom_data_loader
 
 torch.manual_seed(0)
 if torch.cuda.is_available():
@@ -36,9 +31,9 @@ NUM_WORKERS = 0  # Number of threads used by DataLoader. You can adjust this acc
 # valid_dataset = load_seizure_dataset(PATH_VALID_FILE, MODEL_TYPE)
 # test_dataset = load_seizure_dataset(PATH_TEST_FILE, MODEL_TYPE)
 # XrayLoader
-train_loader = my_loader.XrayLoader(PATH_TRAIN_FILE)
-valid_loader = my_loader.XrayLoader(PATH_VALID_FILE)
-test_loader = my_loader.XrayLoader(PATH_TEST_FILE)
+train_loader = custom_data_loader.XrayLoader(PATH_TRAIN_FILE)
+valid_loader = custom_data_loader.XrayLoader(PATH_VALID_FILE)
+test_loader = custom_data_loader.XrayLoader(PATH_TEST_FILE)
 
 # train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
 # valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
