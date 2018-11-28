@@ -3,10 +3,11 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
-from utils import train, evaluate
+from utils import train, evaluate, calculate_weigths
 from plots import plot_learning_curves
 from model import cnn
 from loader import custom_data_loader
+
 
 torch.manual_seed(0)
 if torch.cuda.is_available():
@@ -27,22 +28,19 @@ BATCH_SIZE = 8
 USE_CUDA = True  # Set 'True' if you want to use GPU
 NUM_WORKERS = 0  # Number of threads used by DataLoader. You can adjust this according to your machine spec.
 
-# train_dataset = load_seizure_dataset(PATH_TRAIN_FILE, MODEL_TYPE)
-# valid_dataset = load_seizure_dataset(PATH_VALID_FILE, MODEL_TYPE)
-# test_dataset = load_seizure_dataset(PATH_TEST_FILE, MODEL_TYPE)
-# XrayLoader
+
+
 train_loader = custom_data_loader.XrayLoader(PATH_TRAIN_FILE)
 valid_loader = custom_data_loader.XrayLoader(PATH_VALID_FILE)
 test_loader = custom_data_loader.XrayLoader(PATH_TEST_FILE)
 
-# train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=NUM_WORKERS)
-# valid_loader = torch.utils.data.DataLoader(valid_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
-# test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=NUM_WORKERS)
 
+
+weights = calculate_weigths()
 
 # model = dnet.densenet121()
 model = cnn.CNN()
-weights = [0.45, 0.55]
+# weights = [0.45, 0.55]
 class_weights = torch.FloatTensor(weights)
 criterion = nn.CrossEntropyLoss(weight=class_weights)
 # criterion = nn.BCEWithLogitsLoss(weight=class_weights)

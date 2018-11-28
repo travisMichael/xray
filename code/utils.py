@@ -25,6 +25,25 @@ class AverageMeter(object):
 		self.avg = self.sum / self.count
 
 
+def max_num_in_list(list):
+	largest = 0
+	for item in list:
+		if 'original' in item:
+			current = int(item.split('orig')[0])
+			if current > largest:
+				largest = current
+	return largest
+
+def calculate_weigths():
+	n_list = os.listdir("../data/train/negative/")
+	p_list = os.listdir("../data/train/positive/")
+	n_size = max_num_in_list(n_list)
+	p_size = max_num_in_list(p_list)
+
+	total = n_size + p_size
+	weights = [(float(n_size) / total), (float(p_size) / total)]
+	return weights
+
 def compute_batch_accuracy(output, target):
 	"""Computes the accuracy for a batch"""
 	with torch.no_grad():
