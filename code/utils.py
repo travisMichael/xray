@@ -47,15 +47,26 @@ def train(model, device, data_loader, criterion, optimizer, epoch, print_freq=10
 	end = time.time()
 	index = 1
 	i = 0
+	total_load = 0
+	total_train = 0
 	while True:
 
+
+		start_load_time = time.time()
 		input, target = data_loader.get_next_batch()
+
 		if input is None:
+			data_loader.reset()
 			break
+
 
 		input = torch.tensor(input, dtype=torch.float)
 		target = torch.tensor(target, dtype=torch.long)
+		end_load_time = time.time()
+		total_load +=  (end_load_time - start_load_time)
 
+
+		start_train_time = time.time()
 		if isinstance(input, tuple):
 			input = tuple([e.to(device) if type(e) == torch.Tensor else e for e in input])
 		else:
@@ -77,6 +88,9 @@ def train(model, device, data_loader, criterion, optimizer, epoch, print_freq=10
 
 		losses.update(loss.item(), target.size(0))
 		accuracy.update(compute_batch_accuracy(output, target).item(), target.size(0))
+
+		end_train_time = time.time()
+		total_train +=  (end_train_time - start_train_time)
 		index += 1
 		if i % print_freq == 0:
 			print('Epoch: [{0}][{1}/{2}]\t'
@@ -99,14 +113,20 @@ def evaluate(model, device, data_loader, criterion, print_freq=10):
 	results = []
 
 	model.eval()
+	i = 0
 
 	with torch.no_grad():
 		end = time.time()
 		while True:
 
 			input, target = data_loader.get_next_batch()
+
 			if input is None:
+				data_loader.reset()
 				break
+
+			input = torch.tensor(input, dtype=torch.float)
+			target = torch.tensor(target, dtype=torch.long)
 
 			if isinstance(input, tuple):
 				input = tuple([e.to(device) if type(e) == torch.Tensor else e for e in input])
@@ -129,15 +149,16 @@ def evaluate(model, device, data_loader, criterion, print_freq=10):
 			y_pred = output.detach().to('cpu').max(1)[1].numpy().tolist()
 			results.extend(list(zip(y_true, y_pred)))
 			y1, y2 = zip(*results)
-			f1 = sklearn.metrics.f1_score(y1, y2)
-			roc = sklearn.metrics.roc_auc_score(y2, y1)
+			# f1 = sklearn.metrics.f1_score(y1, y2)
+			# roc = sklearn.metrics.roc_auc_score(y2, y1)
+			i += 1
 
 			if i % print_freq == 0:
 				print('Test: [{0}/{1}]\t'
 					  'Time {batch_time.val:.3f} ({batch_time.avg:.3f})\t'
 					  'Loss {loss.val:.4f} ({loss.avg:.4f})\t'
 					  'Accuracy {acc.val:.3f} ({acc.avg:.3f})'.format(
-					i, data_loader.size, batch_time=batch_time, loss=losses, acc=accuracy))
+					i, 100, batch_time=batch_time, loss=losses, acc=accuracy))
 
 	return losses.avg, accuracy.avg, results
 

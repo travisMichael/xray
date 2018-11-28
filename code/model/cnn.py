@@ -12,7 +12,7 @@ class CNN(nn.Module):
         # an affine operation: y = Wx + b
         self.fc1 = nn.Linear(44944, 120)
         self.fc2 = nn.Linear(120, 84)
-        self.fc3 = nn.Linear(84, 10)
+        self.fc3 = nn.Linear(84, 2)
 
     def forward(self, x):
         # Max pooling over a (2, 2) window

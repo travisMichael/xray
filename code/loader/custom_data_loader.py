@@ -9,22 +9,22 @@ class XrayLoader():
         self.negative_directory_list = os.listdir(path + "negative/")
         self.positive_size = len(self.positive_directory_list)
         self.negative_size = len(self.negative_directory_list)
-        self.positive_data = None
-        self.negative_data = None
-        self.positive_file_index = 0
-        self.negative_file_index = 0
+        self.positive_file_index = 1
+        self.negative_file_index = 1
         self.positive_data_index = 0
         self.negative_data_index = 0
-        self.initialize()
+        self.positive_data = np.load(self.path + "positive/" + self.positive_directory_list[0])
+        self.negative_data = np.load(self.path + "negative/" + self.negative_directory_list[0])
 
-    def initialize(self):
-        self.positive_data = np.load(self.path + "positive/" + self.positive_directory_list[self.positive_file_index])
-        self.negative_data = np.load(self.path + "negative/" + self.negative_directory_list[self.negative_file_index])
-        self.positive_file_index += 1
-        self.negative_file_index += 1
-
-    def has_next_batch(self):
-        return True
+    def reset(self):
+        self.positive_directory_list = os.listdir(self.path + "positive/")
+        self.negative_directory_list = os.listdir(self.path + "negative/")
+        self.positive_file_index = 1
+        self.negative_file_index = 1
+        self.positive_data_index = 0
+        self.negative_data_index = 0
+        self.positive_data = np.load(self.path + "positive/" + self.positive_directory_list[0])
+        self.negative_data = np.load(self.path + "negative/" + self.negative_directory_list[0])
 
     def get_next_negative(self):
         if self.negative_data is None:
@@ -95,6 +95,7 @@ class XrayLoader():
         data = self.expand(data)
         return (data, labels)
 
+
     def expand(self, data):
         if data is None:
             return None
@@ -107,18 +108,6 @@ class XrayLoader():
             new_data.append(channels)
 
         return np.array(new_data)
-
-
-    def reset(self):
-        self.index = 0
-
-    def iterate(self, path):
-        batch_size = 16
-        positive_directory_list = os.listdir(path + "positive/")
-        negative_directory_list = os.listdir(path + "negative/")
-        for i in negative_directory_list:
-            print(i)
-        print("here")
 
 
 # loader = XrayLoader("../../data/train/")

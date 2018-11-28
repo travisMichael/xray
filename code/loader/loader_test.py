@@ -7,11 +7,12 @@ import numpy as np
 # c = a + b
 #
 o = np.ones(5)
-z = np.zeros(4)
-l = np.hstack((o, z))
+z = np.zeros(5)
+l = np.vstack((o, z))
 
-
-
+m = np.zeros((10,2))
+m[0:5, :-1] = 1
+# m[:, -1,:]
 
 a = [[[1], [2], [3]], [[4], [5], [6]], [[7], [8], [9]]]
 # a[0:1]

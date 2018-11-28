@@ -42,7 +42,11 @@ test_loader = custom_data_loader.XrayLoader(PATH_TEST_FILE)
 
 # model = dnet.densenet121()
 model = cnn.CNN()
-criterion = nn.CrossEntropyLoss()
+weights = [0.45, 0.55]
+class_weights = torch.FloatTensor(weights)
+criterion = nn.CrossEntropyLoss(weight=class_weights)
+# criterion = nn.BCEWithLogitsLoss(weight=class_weights)
+# BCELoss
 optimizer = optim.Adam(model.parameters())
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
