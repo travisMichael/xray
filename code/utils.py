@@ -167,7 +167,7 @@ def evaluate(model, device, data_loader, criterion, print_freq=10):
 			y_true = target.detach().to('cpu').numpy().tolist()
 			y_pred = output.detach().to('cpu').max(1)[1].numpy().tolist()
 			results.extend(list(zip(y_true, y_pred)))
-			y1, y2 = zip(*results)
+			# y1, y2 = zip(*results)
 			# f1 = sklearn.metrics.f1_score(y1, y2)
 			# roc = sklearn.metrics.roc_auc_score(y2, y1)
 			i += 1
