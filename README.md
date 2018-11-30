@@ -8,7 +8,7 @@ Run Pre-process
 
 
 Run Train
-
+    python code/train_model.py
 
 
 Run Test

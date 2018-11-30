@@ -7,86 +7,93 @@ import sklearn
 from sklearn.metrics import *
 from utils import train, evaluate, calculate_weigths
 from plots import plot_learning_curves
-from model import cnn
+from model import cnn, densenet
 from loader import custom_data_loader
 
-torch.manual_seed(0)
-if torch.cuda.is_available():
-    torch.cuda.manual_seed(0)
 
-# Set a correct path to the seizure data file you downloaded
-PATH_TRAIN_FILE = "../data/train/"
-PATH_VALID_FILE = "../data/validation/"
-PATH_TEST_FILE = "../data/test/"
+def train_model(model_type, dataset, path_to_data):
+    torch.manual_seed(0)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(0)
 
-# Path for saving model
-PATH_OUTPUT = "../output/"
-os.makedirs(PATH_OUTPUT, exist_ok=True)
+    # Set a correct path to the seizure data file you downloaded
+    PATH_TRAIN_FILE = path_to_data + "/train/"
+    PATH_VALID_FILE = path_to_data + "/validation/"
+    # PATH_TEST_FILE = "../data/test/"
 
-# Some parameters
-NUM_EPOCHS = 10
-BATCH_SIZE = 8
-USE_CUDA = True  # Set 'True' if you want to use GPU
-NUM_WORKERS = 0  # Number of threads used by DataLoader. You can adjust this according to your machine spec.
+    # Path for saving model
+    PATH_OUTPUT = "../output/"
+    os.makedirs(PATH_OUTPUT, exist_ok=True)
 
-train_loader = custom_data_loader.XrayLoader(PATH_TRAIN_FILE)
-valid_loader = custom_data_loader.XrayLoader(PATH_VALID_FILE)
-test_loader = custom_data_loader.XrayLoader(PATH_TEST_FILE)
+    # Some parameters
+    NUM_EPOCHS = 10
+    BATCH_SIZE = 8
+    USE_CUDA = True  # Set 'True' if you want to use GPU
+    NUM_WORKERS = 0  # Number of threads used by DataLoader. You can adjust this according to your machine spec.
 
-weights = calculate_weigths()
+    train_loader = custom_data_loader.XrayLoader(PATH_TRAIN_FILE)
+    valid_loader = custom_data_loader.XrayLoader(PATH_VALID_FILE)
+    # test_loader = custom_data_loader.XrayLoader(PATH_TEST_FILE)
 
-# model = dnet.densenet121()
-model = cnn.CNN()
-# weights = [0.45, 0.55]
-class_weights = torch.FloatTensor(weights)
-criterion = nn.CrossEntropyLoss(weight=class_weights)
-# criterion = nn.BCEWithLogitsLoss(weight=class_weights)
-# BCELoss
-optimizer = optim.Adam(model.parameters())
+    weights = calculate_weigths(path_to_data)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# device = "cpu"
-model.to(device)
-criterion.to(device)
+    # model = dnet.densenet121()
+    if model_type == "cnn":
+        model = cnn.CNN()
+    if model_type == "densenet":
+        model = densenet.densenet121()
 
-best_val_acc = 0.0
-train_losses, train_accuracies = [], []
-valid_losses, valid_accuracies = [], []
+    class_weights = torch.FloatTensor(weights)
+    criterion = nn.CrossEntropyLoss(weight=class_weights)
+    # criterion = nn.BCEWithLogitsLoss(weight=class_weights)
+    # BCELoss
+    optimizer = optim.Adam(model.parameters())
 
-best_roc = 0
-for epoch in range(NUM_EPOCHS):
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # device = "cpu"
+    model.to(device)
+    criterion.to(device)
 
-    train_loader.reset()
-    valid_loader.reset()
+    best_val_acc = 0.0
+    train_losses, train_accuracies = [], []
+    valid_losses, valid_accuracies = [], []
 
-    train_loss, train_accuracy = train(model, device, train_loader, criterion, optimizer, epoch)
-    valid_loss, valid_accuracy, valid_results = evaluate(model, device, valid_loader, criterion)
+    best_roc = 0
+    for epoch in range(NUM_EPOCHS):
 
-    train_losses.append(train_loss)
-    valid_losses.append(valid_loss)
+        train_loader.reset()
+        valid_loader.reset()
 
-    train_accuracies.append(train_accuracy)
-    valid_accuracies.append(valid_accuracy)
+        train_loss, train_accuracy = train(model, device, train_loader, criterion, optimizer, epoch)
+        valid_loss, valid_accuracy, valid_results = evaluate(model, device, valid_loader, criterion)
 
-    roc = 0
-    y1, y2 = zip(*valid_results)
-    try:
-        roc = sklearn.metrics.roc_auc_score(y1, y2)
-    except:
-        print("exception")
-    print("made it")
+        train_losses.append(train_loss)
+        valid_losses.append(valid_loss)
 
-    if roc > best_roc:
-        best_roc = roc
-        # torch.save(model, os.path.join(PATH_OUTPUT, 'cnn.pth'))
-        torch.save(model, "../output/cnn.pth")
+        train_accuracies.append(train_accuracy)
+        valid_accuracies.append(valid_accuracy)
+
+        roc = 0.0
+        y1, y2 = zip(*valid_results)
+        try:
+            roc = sklearn.metrics.roc_auc_score(y1, y2)
+        except:
+            print("exception")
+        print("made it")
+
+        if roc > best_roc:
+            best_roc = roc
+            # torch.save(model, os.path.join(PATH_OUTPUT, 'cnn.pth'))
+            torch.save(model, "../output/" + model_type + "_" + dataset + ".pth")
 
 
 
+train_model("cnn", "original", "../data")
 
-plot_learning_curves(train_losses, valid_losses, train_accuracies, valid_accuracies)
+#
+# plot_learning_curves(train_losses, valid_losses, train_accuracies, valid_accuracies)
 
 # test_loss, test_accuracy, test_results = evaluate(best_model, device, test_loader, criterion)
-
-class_names = ['Seizure', 'TumorArea', 'HealthyArea', 'EyesClosed', 'EyesOpen']
+#
+# class_names = ['Seizure', 'TumorArea', 'HealthyArea', 'EyesClosed', 'EyesOpen']
 # plot_confusion_matrix(test_results, class_names)
