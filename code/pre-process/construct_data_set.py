@@ -134,7 +134,7 @@ def apply_assign_to_test_set(row):
     else:
         return "test"
 
-dataframe = pd.read_csv("../Data_Entry_2017.csv")
+dataframe = pd.read_csv("../xray/Data_Entry_2017.csv")
 
 
 dataframe["label"] = dataframe["Finding Labels"].apply(lambda x: "Pneumonia" in x)
