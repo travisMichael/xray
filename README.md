@@ -5,7 +5,7 @@ Install Steps:
 
 
 Run Pre-process
-    python code/pre-process/construct_data_set.py
+    python code/preprocess/construct_data_set.py
 
 
 The models have been saved already. To retrain the models, run the

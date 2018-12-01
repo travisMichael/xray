@@ -26,7 +26,7 @@ def train_model(model_type, dataset, path):
     os.makedirs(PATH_OUTPUT, exist_ok=True)
 
     # Some parameters
-    NUM_EPOCHS = 10
+    NUM_EPOCHS = 15
     BATCH_SIZE = 8
     USE_CUDA = True  # Set 'True' if you want to use GPU
     NUM_WORKERS = 0  # Number of threads used by DataLoader. You can adjust this according to your machine spec.
@@ -36,6 +36,7 @@ def train_model(model_type, dataset, path):
     # test_loader = custom_data_loader.XrayLoader(PATH_TEST_FILE)
 
     weights = calculate_weigths(path)
+    weights = [(1.0/16.0),(15.0/16.0)]
 
     # model = dnet.densenet121()
     if model_type == "cnn":
@@ -58,7 +59,7 @@ def train_model(model_type, dataset, path):
     train_losses, train_accuracies = [], []
     valid_losses, valid_accuracies = [], []
 
-    best_roc = 0
+    best_roc = 0.0
     for epoch in range(NUM_EPOCHS):
 
         train_loader.reset()
@@ -89,7 +90,7 @@ def train_model(model_type, dataset, path):
 
 
 
-# train_model("cnn", "salt_and_pepper", "../data")
+train_model("cnn", "salt_and_pepper", "../")
 
 #
 # plot_learning_curves(train_losses, valid_losses, train_accuracies, valid_accuracies)

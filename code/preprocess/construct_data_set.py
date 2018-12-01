@@ -19,6 +19,10 @@ train_negative_processed_elements = 0
 valid_negative_processed_elements = 0
 test_negative_processed_elements = 0
 
+GLOBAL_PATH = "../xray/data"
+LOCAL_PATH = "../../data"
+IS_LOCAL = False
+
 
 def load_image(path):
     current = io.imread(path)
@@ -29,6 +33,7 @@ def load_image(path):
 
 
 def process_data(row, data, number_of_elements, path_to_save):
+    global IS_LOCAL
     path_to_load = "/Users/a1406632/Downloads/"
 
     if number_of_elements > 201:
@@ -38,8 +43,12 @@ def process_data(row, data, number_of_elements, path_to_save):
     data.append(image_data)
     number_of_elements += 1
 
-    if number_of_elements % 50 == 0:
-        path = "../data/" + path_to_save
+    if number_of_elements % 200 == 0:
+        if IS_LOCAL is True:
+            path = "../../data/" + path_to_save
+        else:
+            path = "../xray/data/" + path_to_save
+
         save(data, number_of_elements, path)
         data = []
     return data, number_of_elements
@@ -86,7 +95,7 @@ def save(data, number_processed, path):
 
 
 
-def construct(dataframe):
+def construct(dataframe, path):
     start_time = time.time()
 
     image_df_001 = pd.DataFrame(os.listdir("/Users/a1406632/Downloads/images_001"))
@@ -114,13 +123,13 @@ def construct(dataframe):
     merged = pd.merge(result, dataframe, on="Image Index")
     merged.apply(dataframe_function, axis=1)
 
-    save(train_positive_data, train_positive_processed_elements, "../data/train/positive/")
-    save(valid_positive_data, valid_positive_processed_elements, "../data/validation/positive/")
-    save(test_positive_data, test_positive_processed_elements, "../data/test/positive/")
+    save(train_positive_data, train_positive_processed_elements, path + "/train/positive/")
+    save(valid_positive_data, valid_positive_processed_elements, path + "/validation/positive/")
+    save(test_positive_data, test_positive_processed_elements, path + "/test/positive/")
 
-    save(train_negative_data, train_negative_processed_elements, "../data/train/negative/")
-    save(valid_negative_data, valid_negative_processed_elements, "../data/validation/negative/")
-    save(test_negative_data, test_negative_processed_elements, "../data/test/negative/")
+    save(train_negative_data, train_negative_processed_elements, path + "/train/negative/")
+    save(valid_negative_data, valid_negative_processed_elements, path + "/validation/negative/")
+    save(test_negative_data, test_negative_processed_elements, path + "/test/negative/")
 
     end_time = time.time()
     print("--- %s seconds ---" % (end_time - start_time))
@@ -134,12 +143,23 @@ def apply_assign_to_test_set(row):
     else:
         return "test"
 
-dataframe = pd.read_csv("../xray/Data_Entry_2017.csv")
+def run_main_method(is_local, disease):
+    global IS_LOCAL
+    if is_local:
+        dataframe = pd.read_csv("../../Data_Entry_2017.csv")
+        IS_LOCAL = True
+    else:
+        dataframe = pd.read_csv("../xray/Data_Entry_2017.csv")
 
 
-dataframe["label"] = dataframe["Finding Labels"].apply(lambda x: "Pneumonia" in x)
-dataframe["test_set"] = dataframe["Finding Labels"].apply(apply_assign_to_test_set)
+    dataframe["label"] = dataframe["Finding Labels"].apply(lambda x: disease in x)
+    dataframe["test_set"] = dataframe["Finding Labels"].apply(apply_assign_to_test_set)
 
+    if is_local:
+        path = LOCAL_PATH
+    else:
+        path = GLOBAL_PATH
 
+    construct(dataframe, path)
 
-construct(dataframe)
+run_main_method(True, "Pneumonia")

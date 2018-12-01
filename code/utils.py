@@ -41,7 +41,7 @@ def calculate_weigths(path):
 	p_size = max_num_in_list(p_list)
 
 	total = n_size + p_size
-	weights = [(float(n_size) / total), (float(p_size) / total)]
+	weights = [(float(p_size) / total), (float(n_size) / total)]
 	return weights
 
 def compute_batch_accuracy(output, target):

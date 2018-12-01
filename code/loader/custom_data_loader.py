@@ -33,7 +33,7 @@ class XrayLoader():
             return None
         l = len(self.negative_data)
         i = self.negative_data_index
-        self.negative_data_index += 8
+        self.negative_data_index += 30
         data = self.negative_data[i:self.negative_data_index]
 
         if l < self.negative_data_index:
@@ -55,7 +55,7 @@ class XrayLoader():
         if self.dataset != "original":
             self.positive_data_index += 4
         else:
-            self.positive_data_index += 8
+            self.positive_data_index += 2
         data = self.positive_data[i:self.positive_data_index]
 
         if l < self.positive_data_index:
@@ -72,9 +72,13 @@ class XrayLoader():
     def get_next_batch(self):
 
         p = self.get_next_positive()
+        if p is not None and len(p) == 0:
+            p = self.get_next_positive()
         if self.dataset != "original":
             p = self.apply_augmentation(p)
         n = self.get_next_negative()
+        if n is not None and len(n) == 0:
+            n = self.get_next_negative()
 
 
         if n is not None and p is not None:
@@ -90,11 +94,11 @@ class XrayLoader():
             p_size = len(p)
             p_labels = np.ones(p_size)
             labels = p_labels
-        elif n is not None:
-            data = n
-            n_size = len(n)
-            n_labels = np.ones(n_size)
-            labels = n_labels
+        # elif n is not None:
+        #     data = n
+        #     n_size = len(n)
+        #     n_labels = np.ones(n_size)
+        #     labels = n_labels
         else:
             data = None
             labels = None
