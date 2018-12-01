@@ -22,8 +22,8 @@ def train_model(model_type, dataset, path):
     # PATH_TEST_FILE = "../data/test/"
 
     # Path for saving model
-    PATH_OUTPUT = "../output/"
-    os.makedirs(PATH_OUTPUT, exist_ok=True)
+    # PATH_OUTPUT = "../output/"
+    # os.makedirs(PATH_OUTPUT, exist_ok=True)
 
     # Some parameters
     NUM_EPOCHS = 15
@@ -31,18 +31,34 @@ def train_model(model_type, dataset, path):
     USE_CUDA = True  # Set 'True' if you want to use GPU
     NUM_WORKERS = 0  # Number of threads used by DataLoader. You can adjust this according to your machine spec.
 
-    train_loader = custom_data_loader.XrayLoader(PATH_TRAIN_FILE, dataset=dataset)
-    valid_loader = custom_data_loader.XrayLoader(PATH_VALID_FILE)
-    # test_loader = custom_data_loader.XrayLoader(PATH_TEST_FILE)
+    NEGATIVE_BATCH_SIZE = 40
+    POSITIVE_BATCH_SIZE = 6
+    TOTAL = NEGATIVE_BATCH_SIZE + POSITIVE_BATCH_SIZE
 
-    weights = calculate_weigths(path)
-    weights = [(1.0/16.0),(15.0/16.0)]
+    if "original" != dataset:
+        POSITIVE_BATCH_SIZE = POSITIVE_BATCH_SIZE * 2
+    weights = [(float(POSITIVE_BATCH_SIZE) / TOTAL),(float(NEGATIVE_BATCH_SIZE) / TOTAL)]
+
 
     # model = dnet.densenet121()
     if model_type == "cnn":
         model = cnn.CNN()
     if model_type == "densenet":
         model = densenet.densenet121()
+
+    print("saving " + path + " " + dataset)
+    torch.save(model, path + "/output/" + model_type + "_" + dataset + ".pth")
+
+    train_loader = custom_data_loader.XrayLoader(PATH_TRAIN_FILE,
+                                                 dataset=dataset,
+                                                 negative_batch_size=NEGATIVE_BATCH_SIZE,
+                                                 positive_batch_size=POSITIVE_BATCH_SIZE)
+    valid_loader = custom_data_loader.XrayLoader(PATH_VALID_FILE,
+                                                 negative_batch_size=NEGATIVE_BATCH_SIZE,
+                                                 positive_batch_size=POSITIVE_BATCH_SIZE)
+    # test_loader = custom_data_loader.XrayLoader(PATH_TEST_FILE)
+
+
 
     class_weights = torch.FloatTensor(weights)
     criterion = nn.CrossEntropyLoss(weight=class_weights)
@@ -80,7 +96,7 @@ def train_model(model_type, dataset, path):
             roc = sklearn.metrics.roc_auc_score(y1, y2)
         except:
             print("exception")
-        print("made it")
+        print("roc: " + str(roc))
 
         if roc > best_roc:
             best_roc = roc
@@ -90,7 +106,7 @@ def train_model(model_type, dataset, path):
 
 
 
-train_model("cnn", "salt_and_pepper", "../")
+# train_model("cnn", "salt_and_pepper", "../")
 
 #
 # plot_learning_curves(train_losses, valid_losses, train_accuracies, valid_accuracies)
