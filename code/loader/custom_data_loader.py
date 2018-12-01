@@ -19,26 +19,40 @@ class XrayLoader():
         self.negative_data = np.load(self.path + "negative/" + self.negative_directory_list[0])
 
     def reset(self):
-        self.positive_directory_list = os.listdir(self.path + "positive/")
-        self.negative_directory_list = os.listdir(self.path + "negative/")
-        self.positive_file_index = 1
-        self.negative_file_index = 1
-        self.positive_data_index = 0
-        self.negative_data_index = 0
-        self.positive_data = np.load(self.path + "positive/" + self.positive_directory_list[0])
-        self.negative_data = np.load(self.path + "negative/" + self.negative_directory_list[0])
+        if "train" in self.path:
+            self.positive_directory_list = os.listdir(self.path + "positive/")
+            self.positive_file_index = 1
+            self.positive_data_index = 0
+            self.positive_data = np.load(self.path + "positive/" + self.positive_directory_list[0])
+        else:
+            self.positive_directory_list = os.listdir(self.path + "positive/")
+            self.negative_directory_list = os.listdir(self.path + "negative/")
+            self.positive_file_index = 1
+            self.negative_file_index = 1
+            self.positive_data_index = 0
+            self.negative_data_index = 0
+            self.positive_data = np.load(self.path + "positive/" + self.positive_directory_list[0])
+            self.negative_data = np.load(self.path + "negative/" + self.negative_directory_list[0])
+
+
 
     def get_next_negative(self):
         if self.negative_data is None:
             return None
         l = len(self.negative_data)
         i = self.negative_data_index
-        self.negative_data_index += 30
+        self.negative_data_index += 16
         data = self.negative_data[i:self.negative_data_index]
 
         if l < self.negative_data_index:
             if self.negative_file_index >= len(self.negative_directory_list):
-                self.negative_data = None
+                if "train" in self.path:
+                    self.negative_data = np.load(self.path + "negative/" + self.negative_directory_list[0])
+                    self.negative_data_index = 0
+                    self.negative_file_index = 0
+                    print("cycling through")
+                else:
+                    self.negative_data = None
             else:
                 print("switching negative")
                 self.negative_data = np.load(self.path + "negative/" + self.negative_directory_list[self.negative_file_index])
@@ -55,7 +69,7 @@ class XrayLoader():
         if self.dataset != "original":
             self.positive_data_index += 4
         else:
-            self.positive_data_index += 2
+            self.positive_data_index += 16
         data = self.positive_data[i:self.positive_data_index]
 
         if l < self.positive_data_index:
@@ -94,11 +108,11 @@ class XrayLoader():
             p_size = len(p)
             p_labels = np.ones(p_size)
             labels = p_labels
-        # elif n is not None:
-        #     data = n
-        #     n_size = len(n)
-        #     n_labels = np.ones(n_size)
-        #     labels = n_labels
+        elif n is not None and "train" not in self.path:
+            data = n
+            n_size = len(n)
+            n_labels = np.ones(n_size)
+            labels = n_labels
         else:
             data = None
             labels = None

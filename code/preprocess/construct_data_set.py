@@ -36,8 +36,8 @@ def process_data(row, data, number_of_elements, path_to_save):
     global IS_LOCAL
     path_to_load = "/Users/a1406632/Downloads/"
 
-    if number_of_elements > 201:
-        return data, number_of_elements
+    # if number_of_elements > 201:
+    #     return data, number_of_elements
     image_data = load_image(path_to_load + row[1] + "/" + row[0])
 
     data.append(image_data)
@@ -162,4 +162,4 @@ def run_main_method(is_local, disease):
 
     construct(dataframe, path)
 
-run_main_method(True, "Pneumonia")
+run_main_method(False, "Pneumonia")
