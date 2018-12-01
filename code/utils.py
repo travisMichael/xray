@@ -35,8 +35,8 @@ def max_num_in_list(list):
 	return largest
 
 def calculate_weigths(path):
-	n_list = os.listdir(path + "/train/negative/")
-	p_list = os.listdir(path + "/train/positive/")
+	n_list = os.listdir(path + "/data/train/negative/")
+	p_list = os.listdir(path + "/data/train/positive/")
 	n_size = max_num_in_list(n_list)
 	p_size = max_num_in_list(p_list)
 

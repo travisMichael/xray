@@ -11,14 +11,14 @@ from model import cnn, densenet
 from loader import custom_data_loader
 
 
-def train_model(model_type, dataset, path_to_data):
+def train_model(model_type, dataset, path):
     torch.manual_seed(0)
     if torch.cuda.is_available():
         torch.cuda.manual_seed(0)
 
     # Set a correct path to the seizure data file you downloaded
-    PATH_TRAIN_FILE = path_to_data + "/train/"
-    PATH_VALID_FILE = path_to_data + "/validation/"
+    PATH_TRAIN_FILE = path + "/data/train/"
+    PATH_VALID_FILE = path + "/data/validation/"
     # PATH_TEST_FILE = "../data/test/"
 
     # Path for saving model
@@ -31,11 +31,11 @@ def train_model(model_type, dataset, path_to_data):
     USE_CUDA = True  # Set 'True' if you want to use GPU
     NUM_WORKERS = 0  # Number of threads used by DataLoader. You can adjust this according to your machine spec.
 
-    train_loader = custom_data_loader.XrayLoader(PATH_TRAIN_FILE)
+    train_loader = custom_data_loader.XrayLoader(PATH_TRAIN_FILE, dataset=dataset)
     valid_loader = custom_data_loader.XrayLoader(PATH_VALID_FILE)
     # test_loader = custom_data_loader.XrayLoader(PATH_TEST_FILE)
 
-    weights = calculate_weigths(path_to_data)
+    weights = calculate_weigths(path)
 
     # model = dnet.densenet121()
     if model_type == "cnn":
@@ -84,11 +84,12 @@ def train_model(model_type, dataset, path_to_data):
         if roc > best_roc:
             best_roc = roc
             # torch.save(model, os.path.join(PATH_OUTPUT, 'cnn.pth'))
-            torch.save(model, "../output/" + model_type + "_" + dataset + ".pth")
+            print("saving " + model_type + " " + dataset)
+            torch.save(model, path + "/output/" + model_type + "_" + dataset + ".pth")
 
 
 
-train_model("cnn", "original", "../data")
+# train_model("cnn", "salt_and_pepper", "../data")
 
 #
 # plot_learning_curves(train_losses, valid_losses, train_accuracies, valid_accuracies)

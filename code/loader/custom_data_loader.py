@@ -1,9 +1,11 @@
 import os
 import numpy as np
+import preprocess.salt_pepper_transform as spt
 
 class XrayLoader():
-    def __init__(self, path = "", batch_size = 16):
+    def __init__(self, path = "", batch_size = 16, dataset = "original"):
         self.path = path
+        self.dataset = dataset
         self.batch_size = batch_size / 2
         self.positive_directory_list = os.listdir(path + "positive/")
         self.negative_directory_list = os.listdir(path + "negative/")
@@ -50,7 +52,10 @@ class XrayLoader():
             return None
         l = len(self.positive_data)
         i = self.positive_data_index
-        self.positive_data_index += 8
+        if self.dataset != "original":
+            self.positive_data_index += 4
+        else:
+            self.positive_data_index += 8
         data = self.positive_data[i:self.positive_data_index]
 
         if l < self.positive_data_index:
@@ -67,6 +72,8 @@ class XrayLoader():
     def get_next_batch(self):
 
         p = self.get_next_positive()
+        if self.dataset != "original":
+            p = self.apply_augmentation(p)
         n = self.get_next_negative()
 
 
@@ -95,6 +102,26 @@ class XrayLoader():
         data = self.expand(data)
         return (data, labels)
 
+    def apply_augmentation(self, data):
+        if data is None:
+            return None
+
+        new_data = []
+
+        if self.dataset == "salt_and_pepper":
+            for i in range(len(data)):
+                new_data.append(data[i])
+                new_data.append(spt.salt_and_pepper(data[i]))
+        if self.dataset == "reflection":
+            for i in range(len(data)):
+                new_data.append(data[i])
+                new_data.append(data[i])
+        if self.dataset == "rotation":
+            for i in range(len(data)):
+                new_data.append(data[i])
+                new_data.append(data[i])
+
+        return np.array(new_data)
 
     def expand(self, data):
         if data is None:
