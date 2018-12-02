@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import preprocess.salt_pepper_transform as spt
+import preprocess.reflection_transformation as refl
 
 class XrayLoader():
     def __init__(self, path = "", dataset = "original", negative_batch_size = 15, positive_batch_size = 1):
@@ -134,7 +135,7 @@ class XrayLoader():
         if self.dataset == "reflection":
             for i in range(len(data)):
                 new_data.append(data[i])
-                new_data.append(data[i])
+                new_data.append(refl.reflection(data[i]))
         if self.dataset == "rotation":
             for i in range(len(data)):
                 new_data.append(data[i])
