@@ -3,11 +3,13 @@ import numpy as np
 import preprocess.salt_pepper_transform as spt
 import preprocess.reflection_transformation as refl
 import preprocess.rotation_transform as rotation
+import random
 
 class XrayLoader():
-    def __init__(self, path = "", dataset = "original", negative_batch_size = 15, positive_batch_size = 1):
+    def __init__(self, path = "", dataset = "original", augmentation = "additive_augmentation", negative_batch_size = 15, positive_batch_size = 1):
         self.path = path
         self.dataset = dataset
+        self.augmentation = augmentation
         self.negative_batch_size = negative_batch_size
         self.positive_batch_size = positive_batch_size
         self.positive_directory_list = os.listdir(path + "positive/")
@@ -22,20 +24,15 @@ class XrayLoader():
         self.negative_data = np.load(self.path + "negative/" + self.negative_directory_list[0])
 
     def reset(self):
-        if "train" in self.path:
-            self.positive_directory_list = os.listdir(self.path + "positive/")
-            self.positive_file_index = 1
-            self.positive_data_index = 0
-            self.positive_data = np.load(self.path + "positive/" + self.positive_directory_list[0])
-        else:
-            self.positive_directory_list = os.listdir(self.path + "positive/")
-            self.negative_directory_list = os.listdir(self.path + "negative/")
-            self.positive_file_index = 1
-            self.negative_file_index = 1
-            self.positive_data_index = 0
-            self.negative_data_index = 0
-            self.positive_data = np.load(self.path + "positive/" + self.positive_directory_list[0])
-            self.negative_data = np.load(self.path + "negative/" + self.negative_directory_list[0])
+        self.positive_directory_list = os.listdir(self.path + "positive/")
+        self.negative_directory_list = os.listdir(self.path + "negative/")
+        self.positive_file_index = 1
+        self.negative_file_index = 1
+        self.positive_data_index = 0
+        self.negative_data_index = 0
+        self.positive_data = np.load(self.path + "positive/" + self.positive_directory_list[0])
+        self.negative_data = np.load(self.path + "negative/" + self.negative_directory_list[0])
+
 
 
 
@@ -49,13 +46,7 @@ class XrayLoader():
 
         if l < self.negative_data_index:
             if self.negative_file_index >= len(self.negative_directory_list):
-                if "train" in self.path:
-                    self.negative_data = np.load(self.path + "negative/" + self.negative_directory_list[0])
-                    self.negative_data_index = 0
-                    self.negative_file_index = 0
-                    print("cycling through")
-                else:
-                    self.negative_data = None
+                self.negative_data = None
             else:
                 print("switching negative")
                 self.negative_data = np.load(self.path + "negative/" + self.negative_directory_list[self.negative_file_index])
@@ -69,10 +60,7 @@ class XrayLoader():
             return None
         l = len(self.positive_data)
         i = self.positive_data_index
-        if self.dataset != "original":
-            self.positive_data_index += int(self.positive_batch_size / 2)
-        else:
-            self.positive_data_index += self.positive_batch_size
+        self.positive_data_index += self.positive_batch_size
         data = self.positive_data[i:self.positive_data_index]
 
         if l < self.positive_data_index:
@@ -91,11 +79,13 @@ class XrayLoader():
         p = self.get_next_positive()
         if p is not None and len(p) == 0:
             p = self.get_next_positive()
-        if self.dataset != "original":
-            p = self.apply_augmentation(p)
         n = self.get_next_negative()
         if n is not None and len(n) == 0:
             n = self.get_next_negative()
+        if self.dataset != "original" and "train" not in self.dataset:
+            p = self.apply_augmentation(p)
+            n = self.apply_augmentation(n)
+
 
 
         if n is not None and p is not None:
@@ -130,17 +120,62 @@ class XrayLoader():
         new_data = []
 
         if self.dataset == "salt_and_pepper":
-            for i in range(len(data)):
-                new_data.append(data[i])
-                new_data.append(spt.salt_and_pepper(data[i]))
+            if self.augmentation == "additive_augmentation":
+                for i in range(len(data)):
+                    new_data.append(data[i])
+                    new_data.append(spt.salt_and_pepper(data[i]))
+            else:
+                for i in range(len(data)):
+                    rand = random.randint(1, 100)
+                    if rand >= 0 and rand <= 60:
+                        new_data.append(data[i])
+                    else:
+                        new_data.append(spt.salt_and_pepper(data[i]))
         if self.dataset == "reflection":
-            for i in range(len(data)):
-                new_data.append(data[i])
-                new_data.append(refl.reflection(data[i]))
+            if self.augmentation == "additive_augmentation":
+                for i in range(len(data)):
+                    new_data.append(data[i])
+                    new_data.append(refl.reflection(data[i]))
+            else:
+                for i in range(len(data)):
+                    rand = random.randint(1, 100)
+                    if rand >= 0 and rand <= 60:
+                        new_data.append(data[i])
+                    else:
+                        new_data.append(refl.reflection(data[i]))
+
         if self.dataset == "rotation":
-            for i in range(len(data)):
-                new_data.append(data[i])
-                new_data.append(rotation.rotation(data[i]))
+            if self.augmentation == "additive_augmentation":
+                for i in range(len(data)):
+                    new_data.append(data[i])
+                    new_data.append(rotation.rotation(data[i]))
+            else:
+                for i in range(len(data)):
+                    rand = random.randint(1, 100)
+                    if rand >= 0 and rand <= 60:
+                        new_data.append(data[i])
+                    else:
+                        new_data.append(rotation.rotation(data[i]))
+
+        if self.dataset == "all":
+            if self.augmentation == "additive_augmentation":
+                for i in range(len(data)):
+                    new_data.append(data[i])
+                    new_data.append(rotation.rotation(data[i]))
+                    new_data.append(rotation.rotation(data[i]))
+                    new_data.append(rotation.rotation(data[i]))
+                    new_data.append(rotation.rotation(data[i]))
+            else:
+                for i in range(len(data)):
+                    rand = random.randint(1, 100)
+                    if rand >= 0 and rand <= 25:
+                        new_data.append(data[i])
+                    if rand >= 0 and rand <= 50:
+                        new_data.append(spt.salt_and_pepper(data[i]))
+                    if rand >= 0 and rand <= 75:
+                        new_data.append(rotation.rotation(data[i]))
+                    else:
+                        new_data.append(refl.reflection(data[i]))
 
         return np.array(new_data)
 

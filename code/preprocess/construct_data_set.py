@@ -34,7 +34,7 @@ def load_image(path):
 
 def process_data(row, data, number_of_elements, path_to_save):
     global IS_LOCAL
-    path_to_load = "/Users/a1406632/Downloads/"
+    path_to_load = "D:\\output/"
 
     # if number_of_elements > 201:
     #     return data, number_of_elements
@@ -98,14 +98,18 @@ def save(data, number_processed, path):
 def construct(dataframe, path):
     start_time = time.time()
 
-    image_df_001 = pd.DataFrame(os.listdir("/Users/a1406632/Downloads/images_001"))
-    image_df_002 = pd.DataFrame(os.listdir("/Users/a1406632/Downloads/images_002"))
-    image_df_003 = pd.DataFrame(os.listdir("/Users/a1406632/Downloads/images_003"))
-    image_df_004 = pd.DataFrame(os.listdir("/Users/a1406632/Downloads/images_004"))
-    image_df_005 = pd.DataFrame(os.listdir("/Users/a1406632/Downloads/images_005"))
-    image_df_006 = pd.DataFrame(os.listdir("/Users/a1406632/Downloads/images_006"))
-    image_df_007 = pd.DataFrame(os.listdir("/Users/a1406632/Downloads/images_007"))
-    image_df_008 = pd.DataFrame(os.listdir("/Users/a1406632/Downloads/images_008"))
+    image_df_001 = pd.DataFrame(os.listdir("D:\\output\images_001"))
+    image_df_002 = pd.DataFrame(os.listdir("D:\\output\images_002"))
+    image_df_003 = pd.DataFrame(os.listdir("D:\\output\images_003"))
+    image_df_004 = pd.DataFrame(os.listdir("D:\\output\images_004"))
+    image_df_005 = pd.DataFrame(os.listdir("D:\\output\images_005"))
+    image_df_006 = pd.DataFrame(os.listdir("D:\\output\images_006"))
+    image_df_007 = pd.DataFrame(os.listdir("D:\\output\images_007"))
+    image_df_008 = pd.DataFrame(os.listdir("D:\\output\images_008"))
+    image_df_009 = pd.DataFrame(os.listdir("D:\\output\images_009"))
+    image_df_010 = pd.DataFrame(os.listdir("D:\\output\images_010"))
+    image_df_011 = pd.DataFrame(os.listdir("D:\\output\images_011"))
+    image_df_012 = pd.DataFrame(os.listdir("D:\\output\images_012"))
 
     image_df_001['data_set'] = "images_001"
     image_df_002['data_set'] = "images_002"
@@ -115,8 +119,25 @@ def construct(dataframe, path):
     image_df_006['data_set'] = "images_006"
     image_df_007['data_set'] = "images_007"
     image_df_008['data_set'] = "images_008"
+    image_df_009['data_set'] = "images_009"
+    image_df_010['data_set'] = "images_010"
+    image_df_011['data_set'] = "images_011"
+    image_df_012['data_set'] = "images_012"
 
-    frames = [image_df_001, image_df_002, image_df_003, image_df_004, image_df_005, image_df_006, image_df_007, image_df_008]
+    frames = [
+        image_df_001,
+        image_df_002,
+        image_df_003,
+        image_df_004,
+        image_df_005,
+        image_df_006,
+        image_df_007,
+        image_df_008,
+        image_df_009,
+        image_df_010,
+        image_df_011,
+        image_df_012
+    ]
     result = pd.concat(frames)
     result["Image Index"] = result[result.columns[0]]
 
@@ -162,4 +183,4 @@ def run_main_method(is_local, disease):
 
     construct(dataframe, path)
 
-run_main_method(False, "Pneumonia")
+run_main_method(True, "Pneumonia")

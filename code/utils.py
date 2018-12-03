@@ -64,10 +64,10 @@ def train(model, device, data_loader, criterion, optimizer, epoch, print_freq=10
 	model.train()
 
 	end = time.time()
-	index = 1
+	index = 1.0
 	i = 0
-	total_load = 0
-	total_train = 0
+	total_load = 0.0
+	total_train = 0.0
 	while True:
 
 
@@ -121,7 +121,9 @@ def train(model, device, data_loader, criterion, optimizer, epoch, print_freq=10
 				data_time=data_time, loss=losses, acc=accuracy))
 		i += 1
 
-	return losses.avg, accuracy.avg
+	avg_batch_train = total_train / index
+	avg_batch_load = total_load / index
+	return losses.avg, accuracy.avg, total_train, total_load, avg_batch_train, avg_batch_load
 
 
 def evaluate(model, device, data_loader, criterion, print_freq=10):

@@ -5,20 +5,19 @@ import itertools
 # TODO: You can use other packages if you want, e.g., Numpy, Scikit-learn, etc.
 
 
-def plot_learning_curves(original, s_and_p, reflection, rotation):
+def plot_learning_curves(original, s_and_p):
 	plt.plot(original)
 	plt.plot(s_and_p)
-	plt.plot(reflection)
-	plt.plot(rotation)
-
-	plt.ylabel("ROC")
+	# plt.plot(valid_losses)
+	plt.ylabel("AUC_ROC")
 	plt.xlabel("Epoch")
 	plt.title("ROC Curve")
-	plt.legend(['original', 's_and_p', 'reflection', 'rotation'])
+	plt.legend(['original', 's_and_p'])
 	plt.show()
 
 
 	pass
+
 
 def plot_confusion_matrix(results, class_names):
 	# TODO: Make a confusion matrix plot.

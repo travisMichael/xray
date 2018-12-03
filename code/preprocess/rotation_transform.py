@@ -1,5 +1,6 @@
 import numpy as np
 from PIL import Image
+import random
 
 def rotation(array):
     rand = random.randint(1,100)
