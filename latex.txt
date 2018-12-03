@@ -26,7 +26,8 @@
   \usepackage{cite}
 \fi
 
-
+\usepackage{graphicx}
+\usepackage{caption} % for \captionof
 \usepackage[mathscr]{euscript}
 
 
@@ -138,7 +139,7 @@ This paper outlines an efficient testing framework to test how models trained on
 
 
 \begin{IEEEkeywords}
-Computer Society, IEEE, IEEEtran, journal, \LaTeX, paper, template.
+ChestX-ray14, Convolutional Neural Network, Data Augmentation, Parralel Processing.
 \end{IEEEkeywords}}
 
 
@@ -212,7 +213,7 @@ If $M$'$(O_{test}) > M(O_{test})$, then the augmented data set increases then mo
 % \hfill August 26, 2015
 
 \subsection{Computer Resource Efficiency}
-To avoid the extra overhead in memory for ChestX-ray14, a custom data loader was implemented to perform the data augmentation in line with the training step instead of as a pre-processing step. The data loader is the central piece for efficient data augmentation on this training set. It loads data in batches like a traditional data loader, but it also spawns a new thread to perform data augmentation on the current data batch. It essentially creates new data while the original data is being processed in the model training step. This minimizes the extra time needed to transform the data into new synthetic samples. The data loader is flexible enough to handle a list of different image transformations used for the data augmentation.  To perform an analysis on performance of this framework, three different data transformations are used for data augmentation for two different types of convolutional neural networks. The neural networks and transformations used in this analysis served for examples in this framework. The framework is actually model and transformation invariant; thus, researchers can easily extend this framework with models and transformations of their own flavor. Below is a brief description of the different transformations and models used to test the performance of this type of framework. It is a good practice to identify how a specific transform can be of make the model invariant to certain types of features, bearing in mind that the transformation might add features that hurt the model’s performance. Contemplating the effects before blindly running a random transformation on a dataset of this size could save researchers’ time.  Therefore, the following specifies three transforms followed by a hypothesis on how each could affect the model’s performance.
+To avoid the extra overhead in memory for ChestX-ray14, a custom data loader was implemented to perform the data augmentation in line with the training step instead of as a pre-processing step. The data loader is the central piece for efficient data augmentation on this training set. It loads data in batches like a traditional data loader, but it also spawns a new thread to perform data augmentation on the current data batch. It essentially creates new data while the original data is being processed in the model training step. This minimizes the extra time needed to transform the data into new synthetic samples. The data loader is flexible enough to handle a list of different image transformations used for the data augmentation.  To perform an analysis on performance of this framework, three different data transformations are used for data augmentation for two different types of convolutional neural networks. The neural networks and transformations used in this analysis served for examples in this framework. The framework is actually model and transformation invariant; thus, researchers can easily extend this framework with models and transformations of their own flavor. Below is a brief description of the different transformations and models used to test the performance of this type of framework.
 
 
 
@@ -222,10 +223,109 @@ To avoid the extra overhead in memory for ChestX-ray14, a custom data loader was
 
 
 \section{A Simple Example}
-The conclusion goes here.
+This section outlines a vanilla Convolutional Neural Network (CNN) binary classification model for pneumonia detection. Three common image transformations ($T_{noise}$, $T_{reflection}$, $T_{rotation}$) will be used to construct three different augmented datasets ($A_{noise}$, $A_{reflection}$, $A_{rotation}$). The augmented datasets are constructed in coherence to the process stated in the framework section. Each augmented dataset contains an associated Transformation that was used to generate twice the number of images that have the pneumonia label.
+\\ \\
+  It is a good practice to identify how a specific transform can be of make the model invariant to certain types of features, bearing in mind that the transformation might add features that hurt the model’s performance. Contemplating the effects before blindly running a random transformation on a dataset of this size could save researchers’ time.  Therefore, the following specifies an hypothesis on how each transformation could affect the model’s performance.
 
-\subsection{Architecture}
-\subsection{Data Analysis}
+
+\begin{center}
+	\def\arraystretch{1.5}%
+	\begin{tabular}{|c | c|}
+		\hline
+		Transformation & Purpose  \\ [0.5ex]
+		\hline
+		$T_{noise}$ & To make the model invariant   \\
+		 &  to low level ‘spec’ like pixel   \\
+		 &  features. Diseases like   \\
+		 &   pneumonia have very high- \\
+		 &   level complexities in  \\
+		 &   identifying them.  \\
+		\hline
+		$T_{reflection}$ & Idea is to make the model   \\
+		 & learn the general anatomy of   \\
+		 & a patient. The Transform \\
+		\hline
+		$T_{rotation}$ & Due to the symmetry of lung   \\
+		 & organs, a reflection   \\
+		 & transformation gives the   \\
+		 & model a sample of what the   \\
+		 & disease looks like in the    \\
+		 & opposite lung.   \\ [1ex]
+		\hline
+	\end{tabular}
+\end{center}
+
+\begin{center}
+Example of $T_{reflection}$
+\end{center}
+\begin{center}
+	\includegraphics[scale=0.4]{D:/original.png}
+	\includegraphics[scale=0.4]{D:/reflection.png}
+	\captionof{figure}{}
+\end{center}
+
+Certain arguments were given to the training step to specify what dataset to train the model on. For example, the string argument "rotation" indicated a signal to the data loader to load image samples from $A_{rotation}$ in addition to the original dataset $O_{train}$. If the argument "original", was passed to the data loader, then the data loader will only load images from the original dataset. This type of argument passing provides a flexible way to reuse the same training program for every dataset.
+\\ \\
+To ensure that the data loader was as efficient as possible, statistics were gathered around the training process. Some important statistics include, total training time, average batch training time, and average batch loading time. The table below shows how the training time changed after moving the data loader into a parallel process and ensuring that the avg load time was significantly less than the average training time.
+
+\begin{table*}[t]
+	\centering
+	\def\arraystretch{1.5}%
+	\begin{tabular}{||c c c c c||}
+		\hline
+		Transformation & Total Training  Time   & Avg Batch Training Time & Avg Batch Loading Time & \# of Parallel Threads for Loading Data  \\ [0.5ex]
+		\hline\hline
+		None & 1 & 6 & 5 & 5 \\
+		\hline
+		$T_{noise}$ & 2 & 7 & 5 & 5 \\
+		\hline
+		$T_{reflection}$ & 3 & 545 & 5 & 5  \\
+		\hline
+		$T_{rotation}$ & 4 & 545 & 5 & 5  \\
+		\hline
+		$T_{reflection}$ & 5 & 88 & 5 & 5 \\ [1ex]
+		\hline
+	\end{tabular}
+	\caption{Run Time Statistics}
+	\label{tab:1}
+\end{table*}
+
+.\\ \\ \\ \\ \\ \\
+Four separate CNN models, \\ \\
+$M = $ $\{M_{original}$, $M_{noise}$, $M_{reflection}$, $M_{rotation}\}$ \\ \\
+ were trained separately on the datasets\\ \\
+  $D = \{O_{train}$, $A_{noise}$, $A_{reflection}$, $A_{rotation}\}$. \\ \\  Each model $m \in M$  was trained over twenty epochs and recorded it's AUCROC metric $m(O_{validation})$ from the validation set after each epoch. The graph below is a summary of AUCROC values for each model during the training phase.
+
+\begin{center}
+	\includegraphics[scale=0.6]{D:/roc.PNG}
+	\captionof{figure}{}
+\end{center}
+jkj
+
+
+\begin{center}
+	Table Name
+\end{center}
+\begin{center}
+	\def\arraystretch{1.5}%
+	\begin{tabular}{||c c||}
+		\hline
+		Transformation & AUCROC  \\ [0.5ex]
+		\hline\hline
+		None & 6  \\
+		\hline
+		$T_{noise}$ & 7  \\
+		\hline
+		$T_{reflection}$ & 545  \\
+		\hline
+		$T_{rotation}$ & 545  \\ [1ex]
+		\hline
+	\end{tabular}
+\end{center}
+
+
+
+
 % training graphs
 % aucroc metric table
 % stats on resources
